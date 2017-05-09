@@ -1,0 +1,28 @@
+
+THRUSTERS <===========> MICROCONTROLLER <===========> MOTHERBOARD <===========> IP
+			       |
+			       |
+			       |
+			    SENSORS
+
+==========================================ARDUINO +++ MOTHERBOARD============================================
+WHAT SHIT DO YOU NEED TO TRANSMIT?? *PWM_left/right_3
+don't trasnmit current and voltage, these are directly taken from the analog pins
+
+ARDUINO -> 
+MAIN -> creation of shm object :: static variable declarations :: attach shared memory object to MAIN always :: WRITE DATA TO ARDUINO (MB_ARD.cpp)
+				done						done									done													half done
+ARDUINO -> Read Main's input :: send to ESC board :: Read analog inputs :: send to motherboard
+				done				 done					done				should I?
+
+
+-----------------------TO DO:-------------------------------
+
+arduino to motherboard reverse serial communication to transmit V, I and Temp data
+transmit
+
+Once the buoy is in line how do you decide when the buoy is hit??
+
+How do you know how far away the buoy is?
+->Look at the buoy, rotate by a fixed angle (hypothetically, say 30*), observe the distance the buoy moves on the screen, that should tell you how far away it is
+->Call the forward velocity of the AUV as v(t). Observe the distance the buoy has moved on the screen. Look at gyroZ (Z = vertical axis :: gyroZ = d(yaw)/dt). gyroZ*dt*

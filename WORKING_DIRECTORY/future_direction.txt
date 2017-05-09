@@ -1,0 +1,3 @@
+std::atomic for (non?)blocking atomic r/w (Start worrying about true synchronicity)
+Using interrupts to signal shm r/w
+Gazebo/MATLAB simulation
