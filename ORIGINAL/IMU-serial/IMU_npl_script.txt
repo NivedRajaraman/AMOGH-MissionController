@@ -1,0 +1,18 @@
+forget quatCheck // In case we load this multiple times
+: quatCheck // Create function to print the orientation variables from database
+
+begin
+
+  ?key 0= // Continue until keypress
+
+while
+
+magp di. accelp di. gyrop di. cr // prints accelerometer and magnetometer values 
+yaw di. pitch di. roll di. cr // Prints yaw, pitch, roll from database (in degrees)
+
+
+100 delay // Delay 100 milliseconds
+repeat // Keep repeating until terminal key is pressed
+;
+
+quatCheck // Start the NorthTek script running until key is pressed
