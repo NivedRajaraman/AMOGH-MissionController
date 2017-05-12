@@ -1,15 +1,15 @@
-  /* Functioning:
+/* functioning:
    
-  main()
-  {
-    HAS A BASIC THRUSTER CONTROL OBJECT CALLED MISSIONCONTROLLER THAT IS THE DEFAULT RESPONSE OF THE AUV IN WATER (NOT SURE WHAT IT IS
-    SUPPOSED TO DO AS IT IS SWITCHED ON AND PUT INTO THE WATER). THE IP KEEPS CHECKING THE SURROUNDINGS. IF IT SEES A BUOY, BUOYTASK *INTITIATES*.
-    BUOYTASK IS A EXTENDED SUBCLASS OF MISSIONCONTROLLER TASK. THEY SHARE SOME COMMON STATIC VARIABLES
-    THE MEANING OF INITIATE IS:
-    AS THE AUV IS TURNED ON, OBJECTS OF DIFFRENT CONTROL TYPES ARE INTIATED (EG. FOR RED BUOY BUOYTASK, LANETASK etc.) THE DATA WHICH THE 
-    NEW OBJECT WILL USE TO CONTROL IT IS STORED IN THE STATIC VARIABLES WHICH IS INHERENTLY PASSED ON. 
-   }
-*/ 
+    The basic thruster control object called MissionController details the basic functions that control the motion of the AUV.
+    The MissionController class contains the basic feedbacked (Eg. hovering: requires constant comparison with initial location)
+    and feedbackless (Eg. back thrusters @ 1750 PWM: the AUV may sway due to underwater currents but that is irrelevant here)
+    tasks. 
+*/
+
+// NOTE:
+// IMU roll -> -180 to +180 :: clockwise roll is positive
+// IMU pitch -> -90 to +90 :: positive pitch is nose up
+// IMU yaw -> 0 to 360 :: top-view-clockwise is positive
 
 #ifndef _MISSION_CONTROLLER
 #define _MISSION_CONTROLLER
@@ -36,39 +36,43 @@ public:
   STATE* _state;
 
 protected:
-  static bool RESET;      // RESET resets the static variables in the corresponding action function when we move to some other task and come back
-                          // For example, if you "Hover" some time, the integral error terms would have some non-zero value in it. When we perform
-                          // "forward" for a while and come back to Hover, the integral error term should be reinitialized to 0 again, hence, RESET
-    
+	// RESET resets the static variables in the corresponding action function when we move to some other task and come back
+	// For example, if you "Hover" some time, the integral error terms would have some non-zero value in it. When we perform
+	// "forward" for a while and come back to Hover, the integral error term should be reinitialized to 0 again, hence, RESET
+	static bool RESET;
+
 private:
-  float Kp;
-  float Ki;
+	float Kp;
+	float Ki;
 
 protected:
 
-  void taskComplete();
+	void taskComplete();
 
-  bool taskStatus();					// True means that task has just completed and new task can start
-										          // False means that the task is in the process of runnning
-  void taskRunning();
+	// taskStatus returns the task status (no shit, sherlock)
+	// True means that task has just completed and new task can start
+	// False means that the task is in the process of runnning
+	bool taskStatus();
 
-  float Inv(float x);
+	void taskRunning();
+
+	// "Translation function" refer to help doc for more info
+	float Inv(float x);
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------
 
 public:
 
-   //modifies current PWM values such that the PITCH does not change from the original value from when the function is first called
-
+	//modifies current PWM values such that the PITCH does not change from the original value from when the function is first called
 	float hoverPitch__modifier();
 
-  // modifies current PWM values such that the YAW does not change from the original value from when the function is first called
+	// modifies current PWM values such that the YAW does not change from the original value from when the function is first called
 	float hoverYaw__modifier();
 
-  // sets bottom PWM value such that the DEPTH does not change from the original value from when the function is first called
+	// sets bottom PWM value such that the DEPTH does not change from the original value from when the function is first called
 	float hoverDepth();
 
-  void resetPWM();
+	void resetPWM();
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------
 
