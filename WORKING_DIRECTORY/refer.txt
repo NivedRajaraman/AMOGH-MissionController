@@ -3,4 +3,4 @@ Dont worry about thread safety
 
 Can now run the code as independent read writes.
 
-Can move while loops into the functions and call a beautifully NON-whiled main function
+Can move while loops into the functions and call a beautifully NON-whiled main function (intrinsic time)
