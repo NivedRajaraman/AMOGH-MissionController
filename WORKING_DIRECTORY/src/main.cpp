@@ -30,7 +30,6 @@
 #include <iostream>
 #include <pthread.h>
 #include <string.h>
-
 #include <fcntl.h>   /* File Control Definitions           */
 #include <termios.h> /* POSIX Terminal Control Definitions */
 #include <unistd.h>  /* UNIX Standard Definitions      */ 
@@ -38,18 +37,15 @@
 
 #include <chrono>	// for steady_clock
 
-#include "IMU_AHRS8.h"
+//#include "IMU_AHRS8.h"
 
 #include "state.hpp"
-
 #include "MissionController.hpp"
 #include "BasicController.hpp"
 #include "LaneController.hpp"
 #include "BuoyController.hpp"
 #include "GateController.hpp"
 #include "MarkerController.hpp"
-
-#define SHMSZ 27
 
 main()
 {
@@ -60,42 +56,46 @@ main()
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      CREATING SHARED MEMORY BLOCK (PERMA-ATTACHED TO MC)      &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
+  
+  STATE* shmBlock;    // pointer to the shared memory block
+  shmBlock = new STATE();
 
-  int shmid;          // ID of shared memory segment
+
+
+  /////delete this ( for testing )
+   int shmid;          // ID of shared memory segment
   key_t key;          // key of the segment
   void* shmad;        // address of shared memory block
 
-  STATE* shmBlock;    // pointer to the shared memory block
-
-
-//ATTACH SHARED MEMORY BLOCK TO THE MISSION CONTROLLER (KEEP IT ATTACHED AT ALL TIMES)
-
-// Defining the key of the shared memory segment
   key = 5678;
-  printf("Shared memory going to be created...\n");
-
-// Create the segment
-  if ((shmid = shmget(key, SHMSZ, IPC_CREAT | 0666)) < 0) {
+  if ((shmid = shmget(key, 88, IPC_CREAT | 0666)) < 0) {
     perror("shmget");
     exit(1);
   }
-  printf("Shared memory created...\n");
-
-// Attach the segment to our data space
   if ((shmad = (void *)shmat(shmid, NULL, 0)) == (void *) -1) {
     perror("shmat");
     exit(1);
   }
+  shmBlock = new (shmad) STATE();
+  /////////
+
+
+  
+//ATTACH SHARED MEMORY BLOCK TO THE MISSION CONTROLLER (KEEP IT ATTACHED AT ALL TIMES)
+
+// Defining the key of the shared memory segment
+  printf("Shared memory going to be created...\n");
+  std::cout<<shmBlock->attach_r(1000);
+  shmBlock->attach_theta(2000);
+  shmBlock->attach_phi(3000);
+  printf("Shared memory created...\n");
+// Attach the segment to our data space
   printf("Shared memory segment attached to Mission Controller...\n");
-
-// Reclassing the shared memory so that it goes from a contiguous block of "dumb" memory to a structured
-//  block of memory with sequentially stored data units (that comprise the state information of the AUV)
-  shmBlock = new (shmad) STATE();   // shmBlock is the structured shared memory block
-
+  
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&       BEGIN READING FROM THE IMU       &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
-
+/*
   AHRS8 IMU;
 
   if(IMU.serialInitialize("/dev/ttyUSB1"))
@@ -109,14 +109,14 @@ main()
   }
   
   IMU.fetchSerialData(shmBlock);
-
+*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&       CONTROL OBJECT DEFINITIONS       &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 
 // OBJECT DECLARATIONS: THESE CONTROL THE STATE PARAMETERS AND OUTPUT THE PWM VALUES THAT DRIVE THE AUV IN THE NEXT TIMESTEP
 // Control is given to each object during execution of that particular task
-
+  
   MissionController* MissionC = new MissionController(shmBlock);
 
   BasicController* BasicC = new BasicController(shmBlock);
@@ -145,24 +145,25 @@ main()
 	// MOVE missioncontroller forwards till the task shows up as pathTask ('P'). 
   // Till then the task shows up as 'N' which stands for No Task (used to evaluate condition)
   // Once the lane is visible, hit the target r = 0 condition
-
   // 5 second pre-start wait
-  for (int i = 5; i >= 0; i--) {
+  for (int i = 0; i >= 0; i--) {
     printf("%d...\r", i);
     fflush(stdout);
     sleep(1);
   }
   printf("Running Tasks Sequentially...\n");
-
+  
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&     TASKS     &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&    depending on the task, different control objects change the state of the AUV  &&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 
-  LaneC->Task("Target");
-  BasicC->timedTask("Hover", 2);
+  shmBlock->set_r(10);
+  shmBlock->set_taskID('p');
   LaneC->Task("Align", "Surge", 10);
-
+  //LaneC->Task("Target");
+  BasicC->timedTask("Hover", 2);
+  
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      MEMORY DEALLOCATIONS, CLOSE HANDLES       &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&   perform all memory deallocations and close open handles   &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
@@ -178,7 +179,6 @@ main()
   delete BuoyC;
 
   delete MissionC;
-  delete shmBlock;
-
+  //delete shmBlock;
   exit(0);
 }
