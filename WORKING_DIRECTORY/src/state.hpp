@@ -14,17 +14,17 @@ class STATE
 {
 
 protected:
-  char _taskID;    // IP taskID :: H is Halt, B is buoyTask, 
-
+  char _taskID;    // IP taskID :: H is Halt, B is buoyTask,
+ 
   // startTime :: time of beginning (wall_clock)
   // timeDiff (time between IMU updates :: needed for integral control)
   std::chrono::steady_clock::time_point _startTime;
-  float _timeDiff;
+  float _timeDiff;  //16th bit
 
   // IP (camera) readings
-  float _r;
-  float _theta;
-  float _phi;
+  float* _r;      
+  float* _theta;  
+  float* _phi;   
 
   // angular position measurments
   float _roll;
@@ -45,13 +45,10 @@ protected:
   int _PWM_Bottom[2];
 
   int _Port;
-
+public :
 // Constructor
-public:
   STATE();
-
-public:
-
+  //~STATE();
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      FLOW CONTROL FUNCTIONS     &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
@@ -137,10 +134,16 @@ public:
   void return_PWM_Side(int* PWM);
   void return_PWM_Back(int* PWM);
   void return_PWM_Bottom(int* PWM);
-
+  
 // Call boundary check just before these values are read by the Arduino and given to the thrusters via ESC
   void boundaryCheck(int* PWM);    // IF between 1525 and 1475 make it 1500. If it is more than 1900 make it 1900 (here I conservatively chose 1875 as the max instead of 1900)
 
+
+  //Shared memory functions
+
+  int attach_r(int key);
+  int attach_theta(int key);
+  int attach_phi(int key);
 };
 
 #endif
