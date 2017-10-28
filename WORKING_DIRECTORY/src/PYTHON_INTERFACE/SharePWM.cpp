@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <iostream>
 
-#include "state.hpp"
+#include "../state.hpp"
 #include <cmath>
 
 
