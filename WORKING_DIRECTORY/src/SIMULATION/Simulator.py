@@ -71,6 +71,17 @@ class AUV:
         
         time.sleep(0.1)
 
+
+    def share_memory(self,key_fwdA=6000,key_sideA=6100,key_upA=6200,key_angA=6300):
+        memory1 = load_mem(key_fwdA,4)
+        memory2 = load_mem(key_upA,4)
+        memory3 = load_mem(key_sideA,4)
+        memory4 = load_mem(key_angA,4)
+        memory1.write(self.forward_a)
+        memory2.write(self.upward_a)
+        memory3.write(self.side_a)
+        memory4.write(self.theta_angular_a)
+
         
     def write_memory(self,key_pwm=9000,key_r=1000,key_theta=2000,key_phi=3000):
         
