@@ -11,5 +11,5 @@ wait
 gnome-terminal --command="./shm" &
 sleep 1 &
 wait
-gnome-terminal --command="python ./PYTHON_INTERFACE/Simulator.py"
+gnome-terminal --command="python ./SIMULATION/Simulator.py"
 
