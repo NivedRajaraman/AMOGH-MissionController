@@ -1,7 +1,6 @@
 """
 
 Work in progress 
-Possibly to be abandoned
 
 Simulator code to test shared memory and main.cpp in general
 
@@ -33,7 +32,7 @@ class AUV:
         self.forward_a = 0.0
         self.side_a = 0.0
         self.upward_a = 0.0
-        self.theta_angular_a = 0.0
+        self.angular_a = 0.0
         
     def angle_update(self,distance = 5): #### distance ?
         r = r + r * 1/(1-(self.forward_a*LINEAR_FACTOR)*TIME_STEP/distance )   #### distance * angle ( = r) = constant
@@ -65,7 +64,7 @@ class AUV:
         self.forward_a         	= (self.back_m[0] + self.back_m[1])/2.0-THRESHOLD # forward acceleration
         self.side_a    		= (self.side_m[1] - self.side_m[0]) #assume right is positive
         self.upward_a 		= (bottom_m[0]+bottom_m[1])/2.0-THRESHOLD - HOVER_VALUE #Needs some value to maintain depth
-        self.theta_angular_a 	= (back_m[1]-back_m[0]) #rotating in the horizontal plane
+        self.angular_a 		= (back_m[1]-back_m[0]) #rotating in the horizontal plane
         
         self.angle_update()
         
@@ -80,7 +79,7 @@ class AUV:
         memory1.write(self.forward_a)
         memory2.write(self.upward_a)
         memory3.write(self.side_a)
-        memory4.write(self.theta_angular_a)
+        memory4.write(self.angular_a)
 
         
     def write_memory(self,key_pwm=9000,key_r=1000,key_theta=2000,key_phi=3000):
