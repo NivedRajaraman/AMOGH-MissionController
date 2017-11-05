@@ -1,4 +1,4 @@
-from pyread import *
+from pyread import * 	#for shared memory
 import math
 
 TIME_STEP = 0.1
@@ -7,17 +7,19 @@ TIME_STEP = 0.1
 class Environment:
     def __init__(self):
         
-        self.X = 0.0
+        self.X = 0.0		#coordinates
         self.Y = 0.0
         self.Z = 0.0
-        self.Orientation = 0.0    # angle with x
+        self.Orientation = 0.0  #angle with x
         
-        self.forward_a = 0.0
+        self.forward_a = 0.0	#velocities
         self.side_a = 0.0
         self.upward_a = 0.0
         self.angular_a =0.0
 
     def load_memory(self,key_fwdA=6000,key_sideA=6100,key_upA=6200,key_angA=6300):
+        #load from shared memory
+        
         memory1 = load_mem(key_fwdA,4)
         memory2 = load_mem(key_upA,4)
         memory3 = load_mem(key_sideA,4)
@@ -30,6 +32,8 @@ class Environment:
 
 
     def distance_update(self):
+        #change coordinates according to velocity
+        
         self.Orientation += self.angular_a * TIME_STEP
         self.X += self.forward_a * TIME_STEP * math.cos(self.Orientation) + self.side_a * TIME_STEP * math.sin(self.Orientation)
         self.Y += self.forward_a * TIME_STEP * math.sin(self.Orientation) + self.side_a * TIME_STEP * math.cos(self.Orientation)
