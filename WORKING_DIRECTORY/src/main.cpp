@@ -85,7 +85,8 @@ main()
 
 // Defining the key of the shared memory segment
   printf("Shared memory going to be created...\n");
-  std::cout<<shmBlock->attach_r(1000);
+  shmBlock->attach_taskID(500);
+  shmBlock->attach_r(1000);
   shmBlock->attach_theta(2000);
   shmBlock->attach_phi(3000);
   printf("Shared memory created...\n");
