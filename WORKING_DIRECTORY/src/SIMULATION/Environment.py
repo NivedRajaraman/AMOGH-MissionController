@@ -12,12 +12,12 @@ class Environment:
         self.Z = 0.0
         self.Orientation = 0.0  #angle with x
         
-        self.forward_a = 0.0	#velocities
-        self.side_a = 0.0
-        self.upward_a = 0.0
-        self.angular_a =0.0
+        self.forward_a 	= 0.0	#velocities
+        self.side_a 	= 0.0
+        self.upward_a 	= 0.0
+        self.angular_a 	= 0.0
 
-    def load_memory(self,key_fwdA=6000,key_sideA=6100,key_upA=6200,key_angA=6300):
+    def getVelocities(self,key_fwdA=6000,key_sideA=6100,key_upA=6200,key_angA=6300):
         #load from shared memory
         
         memory1 = load_mem(key_fwdA,4)
@@ -31,7 +31,7 @@ class Environment:
         self.angular_a 	= read_float (memory4.read())
 
 
-    def distance_update(self):
+    def distanceUpdate(self):
         #change coordinates according to velocity
         
         self.Orientation += self.angular_a * TIME_STEP
@@ -42,5 +42,5 @@ class Environment:
         
     def update(self):
 
-        self.load_memory()
-        self.distance_update()
+        self.getVelocities()
+        self.distanceUpdate()
