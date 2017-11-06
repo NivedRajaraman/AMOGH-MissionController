@@ -21,6 +21,7 @@ THETA_FACTOR	= 0.005   	#Linear scaling factor
 PHI_FACTOR	= 0.005   	#Linear scaling factor
 TIME_STEP 	= 0.1
 
+
 class AUV:
     def __init__(self):
         self.r 		= 0.0
@@ -33,9 +34,10 @@ class AUV:
         self.side_a 	= 0.0	#All the velocities
         self.upward_a 	= 0.0
         self.angular_a 	= 0.0
-    
+        self.targetX 	= 0.0
+        self.targetY 	= 0.0
+        self.targetZ 	= 0.0
         
-
         
     def angleUpdate(self,distance = 5): 	#### distance ?
         r = r + r * 1/(1-(self.forward_a*LINEAR_FACTOR)*TIME_STEP/distance )   #### distance * angle ( = r) = constant
@@ -74,6 +76,15 @@ class AUV:
         self.shareIP()
         time.sleep(0.1)
 
+    def getTargetXYZ(self,key):
+        memory1 = load_mem(key,4)
+        memory2 = load_mem(key+100,4)
+        memory3 = load_mem(key+200,4)
+        
+        self.targetX 	= read_float (memory1.read())
+        self.targetY	= read_float (memory2.read())
+        self.targetZ	= read_float (memory3.read())
+       
 
         
     def setVelocity(self):
@@ -91,10 +102,10 @@ class AUV:
         memory2 = load_mem(key_upA,4)
         memory3 = load_mem(key_sideA,4)
         memory4 = load_mem(key_angA,4)
-        memory1.write(self.forward_a)
-        memory2.write(self.upward_a)
-        memory3.write(self.side_a)
-        memory4.write(self.angular_a)
+        write_mem(memory1,self.forward_a)
+        write_mem(memory2,self.upward_a)
+        write_mem(memory3,self.side_a)
+        write_mem(memory4,self.angular_a)
 
         
     def shareIP(self,key_pwm=9000,key_r=1000,key_theta=2000,key_phi=3000):

@@ -17,6 +17,28 @@ class Environment:
         self.upward_a 	= 0.0
         self.angular_a 	= 0.0
 
+        self.targets=[]
+
+
+    def addTarget(self,k):
+        #add a target to the list of targets 
+        #k is a tuple (x,y,z,taskID)
+        
+        self.targets.append(k)
+
+    def shareTargetXYZ(self,index,key=7500):
+        # share relative positions of target and taskID
+        # problem: memory leak ?
+        
+        memory=load_mem(key,4)
+        write_mem(memory,self.targets[0]-self.X)
+        memory=load_mem(key+100,4)
+        write_mem(memory,self.targets[1]-self.Y)
+        memory=load_mem(key+200,4)
+        write_mem(memory,self.targets[2]-self.Z)
+        memory=load_mem(key+300,1)
+        write_mem(memory,self.targets[3])
+        
     def getVelocities(self,key_fwdA=6000,key_sideA=6100,key_upA=6200,key_angA=6300):
         #load from shared memory
         
