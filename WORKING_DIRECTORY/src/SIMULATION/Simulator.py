@@ -8,21 +8,11 @@ Simulator code to test shared memory and main.cpp in general
 from os import sys, path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from PYTHON_INTERFACE.pyread 	#For shm functions
+from PYTHON_INTERFACE.pyread import *	#For shm functions
+from parameters import *
 
 
 pwm=[0]*6
-
-LINEAR_FACTOR	= 0.005   	#Linear scaling factor
-SIDE_MOTORS 	= 0  		#0-1 side
-BACK_MOTORS 	= 2  		#2-3 back
-BOTTOM_MOTORS 	= 4 		#3-4 bottom
-THRESHOLD 	= 1500
-HOVER_VALUE 	= 0
-THETA_FACTOR	= 0.005   	#Linear scaling factor
-PHI_FACTOR	= 0.005   	#Linear scaling factor
-TIME_STEP 	= 0.1
-
 
 class AUV:
     def __init__(self):
@@ -39,11 +29,24 @@ class AUV:
         self.targetX 	= 0.0
         self.targetY 	= 0.0
         self.targetZ 	= 0.0
+
+        self.distance 	= 10.0
+        self.oldDistance= 10.0
         
+    def angleUpdate(self):
+        """
+        The r seen by the camera is a function of the tangent of the angle 
+        made by the centre of the object and the AUV's plane
         
-    def angleUpdate(self,distance = 5): 	#### distance ?
-        r = r + r * 1/(1-(self.forward_a*LINEAR_FACTOR)*TIME_STEP/distance )   #### distance * angle ( = r) = constant
+        r = k*  h/x
         
+
+        """     
+        delX 	= self.distance-self.oldDistance
+        delR 	= -1.0*self.r*delX/self.distance
+        self.r += delR
+        self.theta 	+= self.angular_a*TIME_STEP*THETA_FACTOR
+        self.phi   	+= self.angular_a*TIME_STEP*THETA_FACTOR   # Theta and phi change by same amount
         
     def setPWM(self,pwm):	#Loads the pwm values from the array format from share mem
         
@@ -70,33 +73,25 @@ class AUV:
         
         self.set_pwm(pwm)		#to read from the array format
 
-    def update(self):
-        self.getIP_PWM()
-        self.setVelocity()
-        self.shareVelocities()
-        self.angleUpdate()	#to be worked on
-        self.shareIP()
-        time.sleep(0.1)
-
-    def getTargetXYZ(self,key):
+    
+    def getTargetXYZ(self,key=7500):
         memory1 = load_mem(key,4)
         memory2 = load_mem(key+100,4)
         memory3 = load_mem(key+200,4)
-        
         self.targetX 	= read_float (memory1.read())
         self.targetY	= read_float (memory2.read())
         self.targetZ	= read_float (memory3.read())
-       
 
+        self.oldDistance = self.distance
+        self.distance 	= pow(self.targetX**2+self.targetY**2+self.targetZ**2,0.5)
         
     def setVelocity(self):
         self.forward_a         	= (self.back_m[0] + self.back_m[1])/2.0-THRESHOLD 	# forward acceleration
-        self.side_a    		= (self.side_m[1] - self.side_m[0]) 			#assume right is positive
-        self.upward_a 		= (bottom_m[0]+bottom_m[1])/2.0-THRESHOLD - HOVER_VALUE #Needs some value to maintain depth
-        self.angular_a 		= (back_m[1]-back_m[0]) 				#rotating in the horizontal plane
+        self.side_a    		= (self.side_m[1] - self.side_m[0]) 			# assume right is positive
+        self.upward_a 		= (bottom_m[0]+bottom_m[1])/2.0-THRESHOLD - HOVER_VALUE # Needs some value to maintain depth
+        self.angular_a 		= (back_m[1]-back_m[0]) 				# rotating in the horizontal plane
         
         
-
     def shareVelocities(self,key_fwdA=6000,key_sideA=6100,key_upA=6200,key_angA=6300):
         #share the values with environment.py
         
@@ -116,3 +111,12 @@ class AUV:
         write_mem(self.memoryR,self.r)
         write_mem(self.memoryTheta,self.theta)
         write_mem(self.memoryPhi,self.phi)
+        
+    def update(self):
+        self.getIP_PWM()
+        self.setVelocity()
+        self.shareVelocities()
+        self.getTargetXYZ()
+        self.angleUpdate()	#to be worked on
+        self.shareIP()
+        time.sleep(0.1)
