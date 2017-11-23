@@ -1,4 +1,10 @@
-from pyread import * 	#for shared memory
+
+from os import sys, path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
+from PYTHON_INTERFACE.pyread 	#For shm functions
+
+
 import math
 
 TIME_STEP = 0.1

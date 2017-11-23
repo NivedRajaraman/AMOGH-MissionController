@@ -5,8 +5,10 @@ Work in progress
 Simulator code to test shared memory and main.cpp in general
 
 """
+from os import sys, path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from pyread import *		#For shm functions
+from PYTHON_INTERFACE.pyread 	#For shm functions
 
 
 pwm=[0]*6
