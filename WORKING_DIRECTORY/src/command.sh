@@ -12,4 +12,7 @@ gnome-terminal --command="./shm" &
 sleep 1 &
 wait
 gnome-terminal --command="python ./SIMULATION/Simulator.py"
+sleep 1 &
+wait
+gnome-terminal --command="python ./SIMULATION/Environment.py"
 
