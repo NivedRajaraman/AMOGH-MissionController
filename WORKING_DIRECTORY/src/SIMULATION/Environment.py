@@ -4,6 +4,8 @@ Straightforward, contains details about the AUV's location,
 and the locations of the targets. Shares these with Simulator.py.
 Pretty much done.
 
+Bug with running out of memory addresses if running without the 
+time.sleep() or if letting it run for >5ish minutes - worth fixing ?
 
 """
 
@@ -42,19 +44,21 @@ class Environment:
     def shareTargetXYZ(self,index=0,key=7500):
         # share relative positions of target and taskID
         # problem: memory leak ?
-        
-        memory=load_mem(key,4)
+        try:
+            memory = load_mem(key,4)
+        except:
+            memory = attach(key,4)
         write_mem(memory,self.targets[index][0]-self.X)
-
-        memory=load_mem(key+100,4)
+        """
+        memory=attach(key+100,4)
         write_mem(memory,self.targets[index][1]-self.Y)
 
-        memory=load_mem(key+200,4)
+        memory=attach(key+200,4)
         write_mem(memory,self.targets[index][2]-self.Z)
 
-        memory=load_mem(key+300,1)
-        write_mem(memory,self.targets[index][3])
-        
+        memory=attach(key+300,1)
+        memory.write(self.targets[index][3])
+        """     
     def getVelocities(self,key_fwdA=6000,key_sideA=6100,key_upA=6200,key_angA=6300):
         #load from shared memory
         
@@ -88,3 +92,16 @@ class Environment:
         self.getVelocities()
         self.distanceUpdate()
         self.shareTargetXYZ()
+        #time.sleep(0.1)
+
+
+def main():
+    e = Environment()
+    e.addTarget((1,2,3,'p'))
+    i=0
+    while True:
+        e.update()
+        print i
+        i=i+1
+
+main()

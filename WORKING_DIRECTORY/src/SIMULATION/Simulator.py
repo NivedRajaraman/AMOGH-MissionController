@@ -71,7 +71,7 @@ class AUV:
         self.theta 	= read_float(self.memoryTheta.read())
         self.phi 	= read_float(self.memoryPhi.read())
         
-        self.set_pwm(pwm)		#to read from the array format
+        self.setPWM(pwm)		#to read from the array format
 
     
     def getTargetXYZ(self,key=7500):
@@ -88,17 +88,17 @@ class AUV:
     def setVelocity(self):
         self.forward_a         	= (self.back_m[0] + self.back_m[1])/2.0-THRESHOLD 	# forward acceleration
         self.side_a    		= (self.side_m[1] - self.side_m[0]) 			# assume right is positive
-        self.upward_a 		= (bottom_m[0]+bottom_m[1])/2.0-THRESHOLD - HOVER_VALUE # Needs some value to maintain depth
-        self.angular_a 		= (back_m[1]-back_m[0]) 				# rotating in the horizontal plane
+        self.upward_a 		= (self.bottom_m[0]+self.bottom_m[1])/2.0-THRESHOLD - HOVER_VALUE # Needs some value to maintain depth
+        self.angular_a 		= (self.back_m[1]-self.back_m[0]) 				# rotating in the horizontal plane
         
         
     def shareVelocities(self,key_fwdA=6000,key_sideA=6100,key_upA=6200,key_angA=6300):
         #share the values with environment.py
         
-        memory1 = load_mem(key_fwdA,4)
-        memory2 = load_mem(key_upA,4)
-        memory3 = load_mem(key_sideA,4)
-        memory4 = load_mem(key_angA,4)
+        memory1 = attach(key_fwdA,4)
+        memory2 = attach(key_upA,4)
+        memory3 = attach(key_sideA,4)
+        memory4 = attach(key_angA,4)
         write_mem(memory1,self.forward_a)
         write_mem(memory2,self.upward_a)
         write_mem(memory3,self.side_a)
@@ -116,7 +116,26 @@ class AUV:
         self.getIP_PWM()
         self.setVelocity()
         self.shareVelocities()
-        self.getTargetXYZ()
+
+        while True:
+            try:
+                self.getTargetXYZ()
+                break
+            except:
+                print("Run Environment.py now")
+                time.sleep(1)
+                pass
+            
         self.angleUpdate()	#to be worked on
         self.shareIP()
         time.sleep(0.1)
+
+
+
+
+def main():
+    test1 = AUV()
+    while True:
+        test1.update()
+
+main()
