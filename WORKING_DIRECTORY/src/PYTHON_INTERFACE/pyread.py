@@ -70,8 +70,9 @@ def read_int(mem):
 def write_mem(mem,f):
     mem.write(frombits(float_to_bin(f))[::-1])  ## converts float to binary string, then binary string to actual ascii
 
-
-
+def attach(key,size):
+    mem = shm.SharedMemory(key=key,flags=shm.IPC_CREAT,size=size)
+    return mem
     
 """
 Testing part
