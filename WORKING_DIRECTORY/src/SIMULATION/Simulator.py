@@ -134,8 +134,11 @@ class AUV:
 
 
 def main():
-    test1 = AUV()
+    test = AUV()
     while True:
-        test1.update()
-
+        test.update()
+        print "rtp", test.r,test.theta,test.phi
+        print "vel", test.forward_a,test.side_a,test.upward_a,test.angular_a
+        print "dist",test.distance
+        
 main()

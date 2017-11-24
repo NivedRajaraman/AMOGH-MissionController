@@ -43,10 +43,12 @@ class Environment:
 
     def shareTargetXYZ(self,index=0,key=7500):
         # share relative positions of target and taskID
+
         # problem: memory leak ?
         #try:
         #    memory = load_mem(key,4)
         #except:
+
         memory = attach(key,4)
         write_mem(memory,self.targets[index][0]-self.X)
         memory=attach(key+100,4)
@@ -97,11 +99,11 @@ class Environment:
 
 def main():
     e = Environment()
-    e.addTarget((1,2,3,'p'))
+    e.addTarget((10,5,5,'p'))
     i=0
     while True:
         e.update()
-        print i
-        i=i+1
+        print "target - ", e.targets[0]
+        print "auv - ",e.X,e.Y,e.Z
 
 main()
