@@ -15,7 +15,7 @@ from parameters import *
 pwm=[0]*6
 
 class AUV:
-    def __init__(self):
+    def __init__(self,key_pwm=9000,key_r=1000,key_theta=2000,key_phi=3000,keyX=7500,key_fwdA=6000):
         self.r 		= 0.0
         self.theta 	= 0.0
         self.phi 	= 0.0
@@ -32,6 +32,22 @@ class AUV:
 
         self.distance 	= 10.0
         self.oldDistance= 10.0
+
+        self.memoryFwdA = attach_mem(key_fwdA,4)
+        self.memoryUpA 	= attach_mem(key_fwdA+200,4)
+        self.memorySideA= attach_mem(key_fwdA+100,4)
+        self.memoryAngA = attach_mem(key_fwdA+300,4)
+        
+        
+        self.memoryPWM 	= load_mem(key_pwm,24)
+        self.memoryR 	= load_mem(key_r,4)
+        self.memoryTheta= load_mem(key_theta,4)
+        self.memoryPhi 	= load_mem(key_phi,4)
+
+
+        self.memoryX = load_mem(keyX,4)
+        self.memoryY = load_mem(keyX+100,4)
+        self.memoryZ = load_mem(keyX+200,4)
         
     def angleUpdate(self):
         """
@@ -54,15 +70,11 @@ class AUV:
         self.back_m 	= pwm[BACK_MOTORS:BACK_MOTORS+2]
         self.bottom_m 	= pwm[BOTTOM_MOTORS:BOTTOM_MOTORS+2]
 
-    def getIP_PWM(self,key_pwm=9000,key_r=1000,key_theta=2000,key_phi=3000):
+    def getIP_PWM(self):
         #Load IP,PWM values from shared memory
         #default keys are given, may be changed
         
-        self.memoryPWM 	= load_mem(key_pwm,24)
-        self.memoryR 	= load_mem(key_r,4)
-        self.memoryTheta= load_mem(key_theta,4)
-        self.memoryPhi 	= load_mem(key_phi,4)
-
+       
         dat 		= self.memoryPWM.read()
         for i in range(6):		#pwm is shared as array
             pwm[i] = read_int(dat[4*i:4*i+4])
@@ -74,16 +86,14 @@ class AUV:
         self.setPWM(pwm)		#to read from the array format
 
     
-    def getTargetXYZ(self,key=7500):
-        memory1 = load_mem(key,4)
-        memory2 = load_mem(key+100,4)
-        memory3 = load_mem(key+200,4)
-        self.targetX 	= read_float (memory1.read())
-        self.targetY	= read_float (memory2.read())
-        self.targetZ	= read_float (memory3.read())
+    def getTargetXYZ(self):
 
+        self.targetX 	= read_float (self.memoryX.read())
+        self.targetY	= read_float (self.memoryY.read())
+        self.targetZ	= read_float (self.memoryZ.read())
         self.oldDistance = self.distance
         self.distance 	= pow(self.targetX**2+self.targetY**2+self.targetZ**2,0.5)
+
         
     def setVelocity(self):
         self.forward_a         	= (self.back_m[0] + self.back_m[1])/2.0-THRESHOLD 	# forward acceleration
@@ -92,40 +102,27 @@ class AUV:
         self.angular_a 		= (self.back_m[1]-self.back_m[0]) 				# rotating in the horizontal plane
         
         
-    def shareVelocities(self,key_fwdA=6000,key_sideA=6100,key_upA=6200,key_angA=6300):
+    def shareVelocities(self):
         #share the values with environment.py
         
-        memory1 = attach(key_fwdA,4)
-        memory2 = attach(key_upA,4)
-        memory3 = attach(key_sideA,4)
-        memory4 = attach(key_angA,4)
-        write_mem(memory1,self.forward_a)
-        write_mem(memory2,self.upward_a)
-        write_mem(memory3,self.side_a)
-        write_mem(memory4,self.angular_a)
+        write_float(self.memoryFwdA,self.forward_a)
+        write_float(self.memoryUpA,self.upward_a)
+        write_float(self.memorySideA,self.side_a)
+        write_float(self.memoryAngA,self.angular_a)
 
         
-    def shareIP(self,key_pwm=9000,key_r=1000,key_theta=2000,key_phi=3000):
+    def shareIP(self):
         # write back the updated r,theta,phi to memory
         
-        write_mem(self.memoryR,self.r)
-        write_mem(self.memoryTheta,self.theta)
-        write_mem(self.memoryPhi,self.phi)
+        write_float(self.memoryR,self.r)
+        write_float(self.memoryTheta,self.theta)
+        write_float(self.memoryPhi,self.phi)
         
     def update(self):
         self.getIP_PWM()
         self.setVelocity()
         self.shareVelocities()
-
-        while True:
-            try:
-                self.getTargetXYZ()
-                break
-            except:
-                print("Run Environment.py now")
-                time.sleep(1)
-                pass
-            
+        self.getTargetXYZ()
         self.angleUpdate()	#to be worked on
         self.shareIP()
         time.sleep(0.1)
@@ -135,10 +132,12 @@ class AUV:
 
 def main():
     test = AUV()
+    i=0
     while True:
         test.update()
         print "rtp", test.r,test.theta,test.phi
         print "vel", test.forward_a,test.side_a,test.upward_a,test.angular_a
         print "dist",test.distance
-        
+        #print i
+        i=i+1
 main()

@@ -4,9 +4,6 @@ Straightforward, contains details about the AUV's location,
 and the locations of the targets. Shares these with Simulator.py.
 Pretty much done.
 
-Bug with running out of memory addresses if running without the 
-time.sleep() or if letting it run for >5ish minutes - worth fixing ?
-
 """
 
 from os import sys, path
@@ -20,7 +17,7 @@ import math
 
 
 class Environment:
-    def __init__(self):
+    def __init__(self,keyX=7500,keyFwdA=6000):
         
         self.X = 0.0		#coordinates
         self.Y = 0.0
@@ -31,10 +28,21 @@ class Environment:
         self.side_a 	= 0.0
         self.upward_a 	= 0.0
         self.angular_a 	= 0.0
-
+        
         self.targets=[]
 
+        self.memoryX 	= attach_mem(keyX,4)
+        self.memoryY 	= attach_mem(keyX+100,4)
+        self.memoryZ 	= attach_mem(keyX+200,4)
+        self.memoryID 	= attach_mem(keyX+300,4)
 
+        self.memoryFwdA	= load_mem(keyFwdA,4)
+        self.memoryUpA 	= load_mem(keyFwdA+100,4)
+        self.memorySideA= load_mem(keyFwdA+200,4)
+        self.memoryAngA = load_mem(keyFwdA+300,4)
+    
+        
+        
     def addTarget(self,k):
         #add a target to the list of targets 
         #k is a tuple (x,y,z,taskID)
@@ -44,35 +52,18 @@ class Environment:
     def shareTargetXYZ(self,index=0,key=7500):
         # share relative positions of target and taskID
 
-        # problem: memory leak ?
-        #try:
-        #    memory = load_mem(key,4)
-        #except:
-
-        memory = attach(key,4)
-        write_mem(memory,self.targets[index][0]-self.X)
-        memory=attach(key+100,4)
-        write_mem(memory,self.targets[index][1]-self.Y)
-
-        memory=attach(key+200,4)
-        write_mem(memory,self.targets[index][2]-self.Z)
-
-        memory=attach(key+300,1)
-        memory.write(self.targets[index][3])
-
+        write_float(self.memoryX,self.targets[index][0]-self.X)
+        write_float(self.memoryY,self.targets[index][1]-self.Y)
+        write_float(self.memoryZ,self.targets[index][2]-self.Z)
+        self.memoryID.write(self.targets[index][3])
         
-    def getVelocities(self,key_fwdA=6000,key_sideA=6100,key_upA=6200,key_angA=6300):
+    def getVelocities(self):
         #load from shared memory
         
-        memory1 = load_mem(key_fwdA,4)
-        memory2 = load_mem(key_upA,4)
-        memory3 = load_mem(key_sideA,4)
-        memory4 = load_mem(key_angA,4)
-    
-        self.forward_a 	= read_float (memory1.read())
-        self.side_a 	= read_float (memory2.read())
-        self.up_a 	= read_float (memory3.read())
-        self.angular_a 	= read_float (memory4.read())
+        self.forward_a 	= read_float (self.memoryFwdA.read())
+        self.side_a 	= read_float (self.memorySideA.read())
+        self.up_a 	= read_float (self.memoryUpA.read())
+        self.angular_a 	= read_float (self.memoryAngA.read())
 
 
     def distanceUpdate(self):
@@ -105,5 +96,6 @@ def main():
         e.update()
         print "target - ", e.targets[0]
         print "auv - ",e.X,e.Y,e.Z
-
+        print i
+        i+=1
 main()

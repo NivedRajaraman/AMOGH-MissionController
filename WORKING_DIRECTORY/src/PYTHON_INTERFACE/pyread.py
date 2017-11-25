@@ -67,10 +67,10 @@ def read_int(mem):
         val+=pow(256,i)*ord(mem[i])
     return val
 
-def write_mem(mem,f):
+def write_float(mem,f):
     mem.write(frombits(float_to_bin(f))[::-1])  ## converts float to binary string, then binary string to actual ascii
 
-def attach(key,size):
+def attach_mem(key,size):
     mem = shm.SharedMemory(key=key,flags=shm.IPC_CREAT,size=size)
     return mem
     
