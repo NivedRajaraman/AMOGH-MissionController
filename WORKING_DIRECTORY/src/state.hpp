@@ -14,7 +14,7 @@ class STATE
 {
 
 protected:
-  char _taskID;    // IP taskID :: H is Halt, B is buoyTask,
+  char* _taskID;    // IP taskID :: H is Halt, B is buoyTask,
  
   // startTime :: time of beginning (wall_clock)
   // timeDiff (time between IMU updates :: needed for integral control)
@@ -144,6 +144,7 @@ public :
   int attach_r(int key);
   int attach_theta(int key);
   int attach_phi(int key);
+  int attach_taskID(int key);
 };
 
 #endif

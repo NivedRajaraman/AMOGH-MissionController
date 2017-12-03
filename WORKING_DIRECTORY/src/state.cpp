@@ -6,7 +6,7 @@
 
 STATE::STATE()
 {
-  _taskID = 'n';
+  _taskID = NULL;
   _startTime = std::chrono::steady_clock::now();
   _timeDiff = 0.01;
   _r = NULL;
@@ -40,10 +40,10 @@ STATE::~STATE(){
 /*Set and get the value of the flag (flow control variable)*/
 
 void STATE::set_taskID(char C) {
-  this->_taskID = C;
+  *(this->_taskID) = C;
 }
 char STATE::return_taskID() {
-  return this->_taskID;
+  return *(this->_taskID);
 }
 
 /*&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*/
@@ -274,5 +274,24 @@ int STATE::attach_phi(int key_int){
   }
    this->_phi = new (shmad) float();
    *(this->_phi) = 0;
+   return 1;
+}
+
+int STATE::attach_taskID(int key_int){
+  int shmid;          // ID of shared memory segment
+  key_t key ;          // key of the segment
+  void* shmad;        // address of shared memory block
+  // Create the segment
+  key = key_int;
+  if ((shmid = shmget(key, 4, IPC_CREAT | 0666)) < 0) {
+    perror("shmget");
+    return 0;
+  }
+  if ((shmad = (void *)shmat(shmid, NULL, 0)) == (void *) -1) {
+    perror("shmat");
+    return 0;
+  }
+   this->_taskID = new (shmad) char();
+   *(this->_taskID) = 'n';
    return 1;
 }
