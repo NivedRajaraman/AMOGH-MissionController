@@ -9,3 +9,4 @@ THETA_FACTOR	= 0.005   	#Linear scaling factor
 PHI_FACTOR	= 0.005   	#Linear scaling factor
 TIME_STEP 	= 0.1
 DISTANCE_FACTOR = 0.1
+DISTANCE_TOLERANCE= 0.01
