@@ -1,0 +1,57 @@
+Bot specs:
+
+Weight: 30 kg
+Buoyancy: 5N
+Top speed: 0.5m/s
+Operational depth: < 10m (acrylic hull of 5mm thickness can bear upto this pressure)
+Endurance: 90 min
+Energy consumption: 750 Wh
+Batteries: 4 x 8000mAh LiPo batteries
+Thrusters: Blue Robotics T100 thrusters
+	6 thrusters arranged in such a way as to provide 6 degrees of freedom for motion
+	However, the AUV is designed to offer high resistance to roll and pitch motion
+
+Motherboard: intel i7-4770
+IMU (Inertial Measurement Unit) - This gives the orientation information of AUV (angular orientation, angular velocities, angular acceleration)
+	: Sparton AHRS8
+ESC, Power board: Custom Manufactured
+Main Board (interface between the {ESC,power board} and the motherboard is the main board): Arduino Mega2560
+Onboard pneumatic systems for controlling marker dropper and grabber mechanism
+Camera: 2x Microsoft 720p webcam (low budget cameras)
+
+Dual Hull design, bottom hull houses batteries. Extremely waterproof. Bottom hull also houses a camera for vision along pool-bed
+Top hull houses electronics (ESC boards, power board, main board) as well as the main motherboard all mounted on an internal support
+structure. It also has a camera for straight vision. Modular design, the top hull can be easily disassembled, the sealing mechanism of
+the back plate is lateral which enables a better seal and the sealant is a rubber O-ring. The back plate of the top hull houses the
+pressure sensor (depth sensor) and has an ethernet connection to enable debugging the AUV in motion.
+
+The thrusters are mounted on the supporting structures that connect the two hulls. Power is transferred from the lower to the upper hull
+via underwater SubConn connectors. The hull shapes are based on iterating through various options and choosing as per the optimal CFD plot
+
+Electronics: All custom designed, at a fraction of the cost of off-the-shelf electronics.
+Power board: Supplies power all the other internal electronics. Has a battery protection circuit to regulate the battery voltage. If it drops
+too low, power is cut-off to prevent damage. Power board is connected to the batteries vie SubConn connectors.
+Main Board (Arduino Mega2560): Interfaces ESC boards with the motherboard.
+ESC boards: There are 6 ESC boards, one for each thruster. These are equivalent to "motor driver circuits". They take a signal from the
+main board (which in turn receives this signal from the motherboard) and based on the signal decide how much power is to be supplied to
+the thrusters. 
+
+On board image procesing algorithms to process live camera feed. Algorithms in place to identify a variety of objects underwater.
+Challenging task due to diffraction effects underwater, blueish hue of water distorts true colors and effect of sunlight leading to poor
+image quality and depth of vision. The current algorithms are designed in two stages: a preprocessing stage where the image is processed
+to suppress unwanted underwater effects and make factors like edges and colors more discernible. The classification stage follows where
+the pre-processed image is segmented into object (foreground) and background. Machine learning based approaches are being tested and will
+be implemented subject to whether they will be able to run efficiently on the processor.
+
+The mission controller is designed around a shared memory space. The state information of the AUV is contained in the shared segment and
+is updated periodically by the image processing code to the location of the detected object. The internal path-planner decides the power 
+to be delivered to each of the thrusters to achieve the required kind of motion and communcates with the main board which talks to the
+ESC boards and powers the thrusters. The path planner takes the information provided by the image processing code as well as the data
+from the pressure sensor and the IMU to compute the thruster power distribution.
+
+Achievements:
+
+Winners of NIOT SAVe 2014
+Robosub 2014 placed 15th internationally
+
+Placed 3rd in NIOT SAVe 2015
